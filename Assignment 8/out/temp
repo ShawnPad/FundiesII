@@ -1,0 +1,278 @@
+import tester.*;
+class Examples {
+
+  boolean testSize(Tester t) {
+    Sentinel<String> sentinel = new Sentinel<String>();
+    ANode<String> abc = new Node<String>(sentinel,sentinel,"abc");
+    ANode<String> bcd = new Node<String>(sentinel,abc,"bcd");
+    ANode<String> cde = new Node<String>(sentinel,bcd,"cde");
+    ANode<String> def = new Node<String>(sentinel,cde,"def");
+    Deque<String> e1 = new Deque<String>(sentinel);
+    return  t.checkExpect(e1.size(), 4);
+  }
+
+  void testAddAtHead(Tester t) {
+    Sentinel<String> sentinel = new Sentinel<String>();
+    ANode<String> abc = new Node<String>(sentinel,sentinel,"abc");
+    ANode<String> bcd = new Node<String>(sentinel,abc,"bcd");
+    ANode<String> cde = new Node<String>(sentinel,bcd,"cde");
+    ANode<String> def = new Node<String>(sentinel,cde,"def");
+    Deque<String> e1 = new Deque<String>(sentinel);
+    t.checkExpect(e1.size(), 4);
+    e1.addAtHead("Wow");
+    t.checkExpect(e1.size(), 5);
+  }
+
+  void testAddAtTail(Tester t) {
+    Sentinel<String> sentinel = new Sentinel<String>();
+    ANode<String> abc = new Node<String>(sentinel,sentinel,"abc");
+    ANode<String> bcd = new Node<String>(sentinel,abc,"bcd");
+    ANode<String> cde = new Node<String>(sentinel,bcd,"cde");
+    ANode<String> def = new Node<String>(sentinel,cde,"def");
+    Deque<String> e1 = new Deque<String>(sentinel);
+    t.checkExpect(e1.size(), 4);
+    e1.addAtTail("Wow");
+    t.checkExpect(e1.size(), 5);
+  }
+
+  void testRemoveFromHead(Tester t) {
+    Sentinel<String> sentinel = new Sentinel<String>();
+    ANode<String> abc = new Node<String>(sentinel,sentinel,"abc");
+    ANode<String> bcd = new Node<String>(sentinel,abc,"bcd");
+    ANode<String> cde = new Node<String>(sentinel,bcd,"cde");
+    ANode<String> def = new Node<String>(sentinel,cde,"def");
+    Deque<String> e1 = new Deque<String>(sentinel);
+    t.checkExpect(e1.size(), 4);
+    e1.removeFromHead();
+    t.checkExpect(e1.size(), 3);
+  }
+
+  void testRemoveFromTail(Tester t) {
+    Sentinel<String> sentinel = new Sentinel<String>();
+    ANode<String> abc = new Node<String>(sentinel,sentinel,"abc");
+    ANode<String> bcd = new Node<String>(sentinel,abc,"bcd");
+    ANode<String> cde = new Node<String>(sentinel,bcd,"cde");
+    ANode<String> def = new Node<String>(sentinel,cde,"def");
+    Deque<String> e1 = new Deque<String>(sentinel);
+    t.checkExpect(e1.size(), 4);
+    e1.removeFromTail();
+    t.checkExpect(e1.size(), 3);
+  }
+
+  void testFind(Tester t) {
+    Sentinel<String> sentinel = new Sentinel<String>();
+    Node<String> abc = new Node<String>(sentinel,sentinel,"abc");
+    ANode<String> bcd = new Node<String>(sentinel,abc,"bcd");
+    ANode<String> cde = new Node<String>(sentinel,bcd,"cde");
+    ANode<String> def = new Node<String>(sentinel,cde,"def");
+    Deque<String> e1 = new Deque<String>(sentinel);
+    t.checkExpect(e1.find(new FindObject(abc)), abc);
+  }
+
+  void testRemoveNode(Tester t) {
+    Sentinel<String> sentinel = new Sentinel<String>();
+    ANode<String> abc = new Node<String>(sentinel,sentinel,"abc");
+    ANode<String> bcd = new Node<String>(sentinel,abc,"bcd");
+    ANode<String> cde = new Node<String>(sentinel,bcd,"cde");
+    ANode<String> def = new Node<String>(sentinel,cde,"def");
+    Deque<String> e1 = new Deque<String>(sentinel);
+    t.checkExpect(e1.size(), 4);
+    e1.removeNode(bcd);
+    t.checkExpect(e1.size(), 3);
+  }
+
+}
+
+// Represents a boolean-valued question over values of type T
+interface IPred<T> {
+  boolean apply(T t);
+}
+
+class FindObject implements IPred<ANode> {
+  ANode ob;
+
+  FindObject(ANode ob) {
+    this.ob = ob;
+  }
+
+  public boolean apply(ANode t) {
+    return t.compare(ob);
+  }
+}
+
+
+abstract class ANode<T> {
+  ANode<T> next;
+  ANode<T> prev;
+
+  ANode(ANode<T> next, ANode<T> prev) {
+    this.next = next;
+    this.prev = prev;
+  }
+
+  abstract int count(int acc);
+
+  abstract T remove(ANode<T> p);
+
+  abstract ANode<T> find(IPred pred);
+
+  abstract boolean compare(ANode<T> a);
+
+  abstract boolean compare(T a);
+
+}
+
+class Node<T> extends ANode<T> {
+  T data;
+
+  public Node(T data) {
+    super(null,null);
+    this.data = data;
+  }
+
+  Node(T data, ANode<T> next, ANode<T> prev) {
+    super(next, prev);
+    if (next == null || prev == null) {
+      throw new IllegalArgumentException();
+    }
+    this.data = data;
+    next.prev = this;
+    prev.next = this;
+  }
+
+  Node(ANode<T> next, ANode<T> prev, T data) {
+    super(next, prev);
+    if (next == null || prev == null) {
+      throw new IllegalArgumentException();
+    }
+    this.data = data;
+    next.prev = this;
+    prev.next = this;
+  }
+
+  int count(int acc) {
+    return next.count(acc + 1);
+  }
+
+  T remove(ANode<T> p) {
+    p.next = next;
+    next.prev = p;
+    return data;
+  }
+
+  ANode<T> find(IPred pred) {
+    if (pred.apply(this)) {
+      return this;
+    } else {
+      return next.find(pred);
+    }
+  }
+
+  boolean compare(ANode<T> a) {
+    return a.compare(data);
+  }
+
+  boolean compare(T a) {
+    return this.data.equals(a);
+  }
+}
+
+class Sentinel<T> extends ANode<T> {
+
+  Sentinel() {
+    super(null,null);
+    this.next = this;
+    this.prev = this;
+  }
+
+  int count() {
+    return next.count(0);
+  }
+
+  int count(int acc) {
+    return acc;
+  }
+
+  void addAtHead(T insert) {
+    new Node<T>(next, this, insert);
+  }
+
+  void addAtTail(T insert) {
+    new Node<T>(this, prev, insert);
+  }
+
+  T removeFromHead() {
+    return next.remove(this);
+  }
+
+  T removeFromTail() {
+    return prev.remove(prev.prev);
+  }
+
+  T remove(ANode<T> p) {
+    throw new RuntimeException();
+  }
+
+  ANode<T> find(IPred pred) {
+    return this;
+  }
+
+  boolean compare(ANode<T> a) {
+    return false;
+  }
+
+  boolean compare(T a) {
+    return false;
+  }
+
+  ANode<T> findHelp(IPred pred) {
+    return next.find(pred);
+  }
+
+  void removeNode(ANode n) {
+    ANode a = next.find(new FindObject(n));
+    if (a != this) {
+      a.remove(a.prev);
+    }
+  }
+}
+
+class Deque<T> {
+  Sentinel<T> header;
+
+  Deque() {
+    this.header = new Sentinel<T>();
+  }
+
+  Deque(Sentinel<T> header) {
+    this.header = header;
+  }
+
+  int size() {
+    return header.count();
+  }
+
+  void addAtHead(T insert) {
+    header.addAtHead(insert);
+  }
+
+  void addAtTail(T insert) {
+    header.addAtTail(insert);
+  }
+
+  T removeFromHead() {
+    return header.removeFromHead();
+  }
+
+  T removeFromTail() {
+    return header.removeFromTail();
+  }
+
+  ANode<T> find(IPred pred) {
+    return header.findHelp(pred);
+  }
+
+  void removeNode(ANode<T> n) {
+    header.removeNode(n);
+  }
+}
